@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-surface">
-      <SearchHeader query={query} setQuery={setQuery} userName="Satheesh" />
+      <SearchHeader query={query} setQuery={setQuery} userName="Guest" />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-16">
         {/* Breadcrumb */}

@@ -4,8 +4,14 @@
 import { Search, ArrowRight } from "lucide-react";
 import PhoneMockup from "@/components/sections/PhoneMockup";
 import Button from "@/components/ui/Button";
+import { useNavigate } from "react-router";
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+  const navigateGuest = () => {
+    navigate("/search");
+  };
+
   return (
     <section
       className="relative overflow-hidden min-h-[480px]"
@@ -102,6 +108,7 @@ export default function HeroSection() {
                 color: "var(--color-primary)",
                 fontFamily: "var(--font-display)",
               }}
+              onClick={navigateGuest}
             >
               Continue as Guest
             </button>

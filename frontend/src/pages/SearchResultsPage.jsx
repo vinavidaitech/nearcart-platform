@@ -1,5 +1,5 @@
 // pages/SearchResultsPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "@/components/sections/SearchResultsPage/components/ProductCard";
 import SearchHeader from "@/components/sections/SearchResultsPage/SearchHeader";
@@ -9,9 +9,10 @@ import SuggestionCard from "@/components/sections/SearchResultsPage/components/S
 import { products, suggestions } from "@/constants/data";
 
 export default function SearchResultsPage() {
-  const [query, setQuery] = useState("Nike Air Max 270 size 10");
+  const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [activeFilters, setActiveFilters] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
 
   const toggleFilter = (f) => {
     setActiveFilters((prev) =>
@@ -19,12 +20,19 @@ export default function SearchResultsPage() {
     );
   };
 
+  useEffect(() => {
+    const filteredProducts = products.filter((item) =>
+      item.name.toLowerCase().includes(query.toLowerCase()),
+    );
+    setFilteredItems(filteredProducts);
+  }, [query]);
+
   return (
     <div
       className="min-h-screen"
       style={{ background: "var(--color-surface)" }}
     >
-      <SearchHeader query={query} setQuery={setQuery} userName="Satheesh" />
+      <SearchHeader query={query} setQuery={setQuery} userName="Guest" />
       <CategoryNav
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
@@ -39,14 +47,14 @@ export default function SearchResultsPage() {
             fontFamily: "var(--font-body)",
           }}
         >
-          Showing {products.length} results for{" "}
+          Showing {filteredItems.length} results for{" "}
           <strong
             style={{
               color: "var(--color-text-heading)",
               fontFamily: "var(--font-display)",
             }}
           >
-            Nike Air Max 270 Size 10
+            {query}
           </strong>
         </p>
 
@@ -70,7 +78,7 @@ export default function SearchResultsPage() {
             Available Near You
           </h2>
           <div className="flex flex-col gap-4">
-            {products.map((p) => (
+            {filteredItems.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -141,7 +149,7 @@ export default function SearchResultsPage() {
 //
 //   return (
 //     <div className="min-h-screen" style={{ background: "var(--color-surface)" }}>
-//       <SearchHeader query={query} setQuery={setQuery} userName="Satheesh" />
+//       <SearchHeader query={query} setQuery={setQuery} userName="Guest" />
 //       <CategoryNav activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
 //
 //       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16">
