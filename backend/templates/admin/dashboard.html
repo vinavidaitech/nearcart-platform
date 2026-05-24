@@ -1,0 +1,341 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+
+{# ── KPI Cards ──────────────────────────────────────────────────────────────── #}
+{% if kpis %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;">
+  {% for kpi in kpis %}
+  <div style="
+    background:var(--color-base-100);
+    border:1px solid var(--color-border);
+    border-radius:0.75rem;
+    padding:1.25rem 1rem;
+    display:flex;flex-direction:column;gap:0.35rem;
+  ">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:0.75rem;font-weight:500;color:var(--color-base-content-secondary);text-transform:uppercase;letter-spacing:0.05em;">
+        {{ kpi.title }}
+      </span>
+      <span class="material-symbols-outlined" style="font-size:1.25rem;
+        color:{% if kpi.color == 'success' %}var(--color-success)
+              {% elif kpi.color == 'danger' %}var(--color-error)
+              {% elif kpi.color == 'warning' %}var(--color-warning)
+              {% else %}var(--color-info){% endif %};">
+        {{ kpi.icon }}
+      </span>
+    </div>
+    <div style="font-size:1.6rem;font-weight:700;color:var(--color-base-content);">
+      {{ kpi.value }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Charts Row 1: Revenue + Order Status ──────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+  {# Daily Revenue Line Chart #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Daily Revenue — Last 30 Days
+    </h3>
+    <canvas id="revenueChart" height="100"></canvas>
+  </div>
+
+  {# Order Status Doughnut #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Orders by Status
+    </h3>
+    <canvas id="statusChart" height="160"></canvas>
+  </div>
+
+</div>
+
+{# ── Charts Row 2: Monthly Revenue + Stock Movement ────────────────────────── #}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+  {# Monthly Revenue Bar Chart #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Monthly Revenue — Last 6 Months
+    </h3>
+    <canvas id="monthlyChart" height="120"></canvas>
+  </div>
+
+  {# Stock Movement Bar Chart #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Stock Movement — Last 14 Days
+    </h3>
+    <canvas id="stockChart" height="120"></canvas>
+  </div>
+
+</div>
+
+{# ── Tables Row: Top Products + Recent Sales ────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+  {# Top Products #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;overflow:hidden;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Top Products — Last 30 Days
+    </h3>
+    {% if top_products %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">#</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Product</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Units</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in top_products %}
+        <tr style="border-bottom:1px solid var(--color-border);{% cycle '' 'background:var(--color-base-200);' %}">
+          <td style="padding:0.45rem 0.5rem;color:var(--color-base-content-secondary);">{{ forloop.counter }}</td>
+          <td style="padding:0.45rem 0.5rem;color:var(--color-base-content);font-weight:500;">{{ p.variant__product__name|truncatechars:30 }}</td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;color:var(--color-base-content);">{{ p.units }}</td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;color:var(--color-success);font-weight:600;">₹{{ p.revenue|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--color-base-content-secondary);font-size:0.85rem;">No sales data yet.</p>
+    {% endif %}
+  </div>
+
+  {# Recent Sales #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;overflow:hidden;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Recent Sales
+    </h3>
+    {% if recent_sales %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Order</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Customer</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_sales %}
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <td style="padding:0.45rem 0.5rem;">
+            <a href="{% url 'admin:billing_salesorder_change' order.pk %}" style="color:var(--color-primary);font-weight:500;">
+              {{ order.order_number }}
+            </a>
+            <div style="font-size:0.7rem;color:var(--color-base-content-secondary);">{{ order.completed_at|date:"d M, H:i" }}</div>
+          </td>
+          <td style="padding:0.45rem 0.5rem;color:var(--color-base-content);">
+            {{ order.customer.name|default:"Walk-in"|truncatechars:20 }}
+          </td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;color:var(--color-success);font-weight:600;">
+            ₹{{ order.grand_total|floatformat:2 }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--color-base-content-secondary);font-size:0.85rem;">No completed sales yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+{# ── Tables Row 2: Low Stock + Pending POs ──────────────────────────────────── #}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+  {# Low Stock Alert #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;overflow:hidden;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-error);">
+      ⚠ Low Stock Alerts
+    </h3>
+    {% if low_stock_products %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Product</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Stock</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Threshold</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in low_stock_products %}
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <td style="padding:0.45rem 0.5rem;">
+            <a href="{% url 'admin:inventory_product_change' product.pk %}" style="color:var(--color-primary);font-weight:500;">
+              {{ product.name|truncatechars:28 }}
+            </a>
+            <div style="font-size:0.7rem;color:var(--color-base-content-secondary);">{{ product.shop.name }}</div>
+          </td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;font-weight:700;color:{% if product.total_stock == 0 %}var(--color-error){% else %}var(--color-warning){% endif %};">
+            {{ product.total_stock }}
+          </td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;color:var(--color-base-content-secondary);">
+            {{ product.low_stock_threshold }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--color-success);font-size:0.85rem;">✓ All products adequately stocked.</p>
+    {% endif %}
+  </div>
+
+  {# Pending Purchase Orders #}
+  <div style="background:var(--color-base-100);border:1px solid var(--color-border);border-radius:0.75rem;padding:1.25rem;overflow:hidden;">
+    <h3 style="margin:0 0 1rem;font-size:0.9rem;font-weight:600;color:var(--color-base-content);">
+      Pending Purchase Orders
+    </h3>
+    {% if pending_purchase_orders %}
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">PO #</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Supplier</th>
+          <th style="text-align:left;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Expected</th>
+          <th style="text-align:right;padding:0.4rem 0.5rem;color:var(--color-base-content-secondary);font-weight:500;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for po in pending_purchase_orders %}
+        <tr style="border-bottom:1px solid var(--color-border);">
+          <td style="padding:0.45rem 0.5rem;">
+            <a href="{% url 'admin:billing_purchaseorder_change' po.pk %}" style="color:var(--color-primary);font-weight:500;">
+              {{ po.po_number }}
+            </a>
+            <span style="font-size:0.7rem;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--color-warning-content);color:var(--color-warning);">
+              {{ po.status }}
+            </span>
+          </td>
+          <td style="padding:0.45rem 0.5rem;color:var(--color-base-content);">{{ po.supplier.name|default:"—"|truncatechars:18 }}</td>
+          <td style="padding:0.45rem 0.5rem;color:var(--color-base-content-secondary);">{{ po.expected_delivery_date|date:"d M"|default:"—" }}</td>
+          <td style="padding:0.45rem 0.5rem;text-align:right;font-weight:600;color:var(--color-base-content);">₹{{ po.grand_total|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--color-base-content-secondary);font-size:0.85rem;">No pending purchase orders.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+{# ── Chart.js scripts ───────────────────────────────────────────────────────── #}
+{% if revenue_chart %}
+<script>
+(function() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const gridColor  = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const textColor  = isDark ? '#9ca3af' : '#6b7280';
+
+  const defaultOpts = {
+    responsive: true,
+    plugins: { legend: { labels: { color: textColor, font: { size: 11 } } } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor } },
+    },
+  };
+
+  // 1. Daily Revenue line chart
+  new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+      labels: {{ revenue_chart.labels|safe }},
+      datasets: [
+        {
+          label: 'Revenue (₹)',
+          data: {{ revenue_chart.revenues|safe }},
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99,102,241,0.1)',
+          fill: true, tension: 0.4, pointRadius: 3,
+        },
+        {
+          label: 'Orders',
+          data: {{ revenue_chart.order_counts|safe }},
+          borderColor: '#10b981',
+          backgroundColor: 'transparent',
+          tension: 0.4, pointRadius: 3,
+          yAxisID: 'y2',
+        },
+      ],
+    },
+    options: {
+      ...defaultOpts,
+      scales: {
+        ...defaultOpts.scales,
+        y2: { position: 'right', ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } },
+      },
+    },
+  });
+
+  // 2. Order status doughnut
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: {{ order_status_chart.labels|safe }},
+      datasets: [{
+        data: {{ order_status_chart.values|safe }},
+        backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444','#8b5cf6'],
+        borderWidth: 0,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, padding: 12 } } },
+    },
+  });
+
+  // 3. Monthly revenue bar
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ monthly_chart.labels|safe }},
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: {{ monthly_chart.values|safe }},
+        backgroundColor: 'rgba(99,102,241,0.75)',
+        borderRadius: 6,
+      }],
+    },
+    options: defaultOpts,
+  });
+
+  // 4. Stock movement grouped bar
+  new Chart(document.getElementById('stockChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ stock_movement_chart.labels|safe }},
+      datasets: [
+        {
+          label: 'Stock In',
+          data: {{ stock_movement_chart.stock_in|safe }},
+          backgroundColor: 'rgba(16,185,129,0.75)',
+          borderRadius: 4,
+        },
+        {
+          label: 'Stock Out',
+          data: {{ stock_movement_chart.stock_out|safe }},
+          backgroundColor: 'rgba(239,68,68,0.65)',
+          borderRadius: 4,
+        },
+      ],
+    },
+    options: { ...defaultOpts, scales: { ...defaultOpts.scales } },
+  });
+})();
+</script>
+{% endif %}
+
+{% endblock %}
