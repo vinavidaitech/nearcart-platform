@@ -136,7 +136,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Vite dev server origin
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=["http://localhost:5173"])
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localhost:5173"])
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
 
 REFRESH_COOKIE_NAME = "refresh_token"
 REFRESH_COOKIE_SECURE = not DEBUG   # True in production (HTTPS only)
