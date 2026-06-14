@@ -15,7 +15,6 @@ class ShopImageSerializer(serializers.ModelSerializer):
         model = ShopImage
         fields = "__all__"
 
-
 class ShopSerializer(serializers.ModelSerializer):
     images = ShopImageSerializer(many=True, read_only=True)
     category = ShopCategorySerializer(source="primary_category", read_only=True)
@@ -29,14 +28,17 @@ class ShopSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Shop
-        fields = "__all__"
+        fields = [
+            "id", "owner", "category", "primary_category", "name", "slug",
+            "description", "address_line", "city", "latitude", "longitude",
+            "lat", "lng", "google_place_id", "opening_hours", "phone",
+            "email", "website", "status", "is_verified", "rating",
+            "total_reviews", "floor_plan_url", "images",
+            "created_at", "updated_at",
+        ]
         read_only_fields = [
-            "slug",
-            "rating",
-            "total_reviews",
-            "is_verified",
-            "created_at",
-            "updated_at",
+            "id", "owner", "slug", "status", "is_verified",
+            "rating", "total_reviews", "created_at", "updated_at",
         ]
 
     def validate(self, attrs):
@@ -44,4 +46,9 @@ class ShopSerializer(serializers.ModelSerializer):
         lng = attrs.pop("lng", None)
         if lat is not None and lng is not None:
             attrs["location"] = Point(lng, lat, srid=4326)
+        elif self.instance is None:
+            # Creating a new shop — location is mandatory
+            raise serializers.ValidationError(
+                {"lat": "lat and lng are required to create a shop."}
+            )
         return attrs

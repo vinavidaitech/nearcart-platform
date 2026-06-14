@@ -1,9 +1,13 @@
-from django.shortcuts import render
-from .serializers import ShopSerializer, ShopCategorySerializer
-from .models import ShopCategory, Shop
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import Distance as D
 from rest_framework import generics, permissions
 from rest_framework.views import APIView
-# Create your views here.
+from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
+
+from .serializers import ShopSerializer, ShopCategorySerializer
+from .models import ShopCategory, Shop
+from .permissions import IsShopOwnerOrReadOnly
 
 
 class ShopCategoryListView(generics.ListAPIView):
@@ -11,6 +15,17 @@ class ShopCategoryListView(generics.ListAPIView):
     serializer_class = ShopCategorySerializer
     permission_classes = [permissions.AllowAny]
 
+
+class MyShopsView(generics.ListAPIView):
+    serializer_class = ShopSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            self.request.user.owned_shops
+            .select_related("primary_category")
+            .prefetch_related("images")
+        )
 
 class ShopListCreateView(generics.ListCreateAPIView):
     queryset = Shop.objects.select_related("primary_category").prefetch_related(
@@ -29,7 +44,10 @@ class ShopDetailView(generics.RetrieveUpdateDestroyAPIView):
     )
     serializer_class = ShopSerializer
     lookup_field = "slug"
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsShopOwnerOrReadOnly,
+    ]
 
 
 class NearbyShopsView(APIView):
@@ -54,6 +72,5 @@ class NearbyShopsView(APIView):
             .select_related("primary_category")
             .prefetch_related("images")
         )
-
-        serializer = ShopListSerializer(shops, many=True)
+        serializer = ShopSerializer(shops, many=True)
         return Response(serializer.data)
