@@ -10,4 +10,5 @@ class CustomUserListView(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     lookup_field = "id"
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAdminUser]   
+

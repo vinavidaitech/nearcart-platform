@@ -3,10 +3,16 @@ from django.contrib.gis.geos import Point
 from .models import CustomUser
 
 
+# apps/accounts/serializers.py
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = "__all__"
+        fields = [
+            "id", "email", "phone", "full_name", "role",
+            "is_verified", "avatar_url", "preferred_radius_km",
+            "created_at",
+        ]
+        read_only_fields = ["id", "email", "role", "is_verified", "created_at"]
 
 
 
