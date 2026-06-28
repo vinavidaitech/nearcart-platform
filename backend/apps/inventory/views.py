@@ -88,10 +88,13 @@ class LocationNodeViewSet(ShopScopedMixin, viewsets.ModelViewSet):
 
 # ── Product Categories ─────────────────────────────────────────────────────────
 
-class ProductCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class ProductCategoryViewSet(viewsets.ModelViewSet):
+
     """
-    GET /inventory/categories/      — all active categories
-    GET /inventory/categories/{id}/ — single category
+    GET    /inventory/categories/       — all active categories
+    POST   /inventory/categories/       — create category
+    PATCH  /inventory/categories/{id}/  — update category
+    DELETE /inventory/categories/{id}/  — delete category
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ProductCategorySerializer
