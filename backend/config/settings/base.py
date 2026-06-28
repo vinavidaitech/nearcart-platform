@@ -76,10 +76,18 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {"default": env.db("DATABASE_URL")}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
-# ✅ FORCE PostGIS engine
-DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
+
+# DATABASES = {"default": env.db("DATABASE_URL")}
+#
+# # ✅ FORCE PostGIS engine
+# DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
 CACHES = {
     "default": {

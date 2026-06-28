@@ -10,6 +10,14 @@ from apps.inventory.models import Product, ProductVariant, StockMovement
 from apps.shops.models import Shop
 
 
+class PaymentMethod(models.TextChoices):
+    CASH          = "cash",          "Cash"
+    UPI           = "upi",           "UPI"
+    CARD          = "card",          "Card"
+    BANK_TRANSFER = "bank",          "Bank Transfer"
+    CREDIT        = "credit",        "Store Credit"
+    OTHER         = "other",         "Other"
+
 # ── Supplier ───────────────────────────────────────────────────────────────────
 
 
@@ -344,6 +352,12 @@ class SalesOrder(models.Model):
     change_due = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0.00")
     )
+
+    payment_method = models.CharField(
+    max_length=20,
+    choices=PaymentMethod.choices,
+    blank=True,
+)
 
     notes = models.TextField(blank=True)
     served_by = models.ForeignKey(
