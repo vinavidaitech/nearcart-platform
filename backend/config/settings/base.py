@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.gis",
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
@@ -76,18 +75,12 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
 
 
-# DATABASES = {"default": env.db("DATABASE_URL")}
-#
-# # ✅ FORCE PostGIS engine
-# DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
+DATABASES = {"default": env.db("DATABASE_URL")}
+
+# ✅ FORCE PostGIS engine
+DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
 CACHES = {
     "default": {

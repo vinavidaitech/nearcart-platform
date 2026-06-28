@@ -513,3 +513,5 @@ class ReturnViewSet(ShopScopedMixin, viewsets.ModelViewSet):
         ret.resolved_at = timezone.now()
         ret.save(update_fields=['status', 'resolved_by', 'resolved_at'])
         return Response(ReturnSerializer(ret).data)
+
+
