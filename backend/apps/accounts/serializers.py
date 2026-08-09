@@ -31,3 +31,18 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=CustomUser.Role.OWNER,
         )
 
+
+class RegisterRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    full_name = serializers.CharField(max_length=200)
+    password = serializers.CharField(write_only=True, min_length=6)
+
+    def validate_email(self, value):
+        value = value.lower().strip()
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("An account with this email already exists.")
+        return value
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6, min_length=6)
