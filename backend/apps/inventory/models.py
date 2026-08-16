@@ -235,12 +235,15 @@ class ProductVariant(models.Model):
         return f"{self.product.name} — {self.variant_attributes}"
 
 
+# apps/inventory/models.py
+
 class ProductImage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="images"
     )
-    url = models.TextField()  # Cloudflare R2 / S3 URL
+    image = models.ImageField(upload_to="products/%Y/%m/", null=True, blank=True)
+    url = models.TextField(blank=True)  # Cloudflare R2 / S3 URL — auto-filled from `image` on save
     alt_text = models.CharField(max_length=200, blank=True)
     sort_order = models.PositiveSmallIntegerField(default=0)
     is_primary = models.BooleanField(default=False)
@@ -249,6 +252,11 @@ class ProductImage(models.Model):
     class Meta:
         db_table = "inventory_productimage"
         ordering = ["sort_order"]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and not self.url:
+            ProductImage.objects.filter(pk=self.pk).update(url=self.image.url)
 
 
 class PriceHistory(models.Model):

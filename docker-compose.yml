@@ -37,6 +37,7 @@ services:
       - ./backend/.env
     volumes:
       - ./backend:/app
+      - /app/.venv
     ports:
       - "8000:8000"
     depends_on:

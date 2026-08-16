@@ -17,6 +17,10 @@ from .serializers import (
     AttributeSchemaSerializer,
 )
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
+
+
 
 def get_shop_or_404(request):
     """Return the shop scoped to the current request (via header or query param)."""
@@ -166,6 +170,54 @@ class ProductViewSet(ShopScopedMixin, viewsets.ModelViewSet):
             qs = qs.filter(total_stock__lte=F('low_stock_threshold'), total_stock__gt=0)
 
         return qs.order_by('name')
+
+
+    @action(detail=True, methods=['post', 'get'], url_path='images', parser_classes=[MultiPartParser, FormParser])
+    def images(self, request, pk=None):
+        product = self.get_object()
+        if request.method == 'GET':
+            return Response(
+                ProductImageSerializer(product.images.all(), many=True).data
+            )
+        serializer = ProductImageUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        image = serializer.save(product=product)
+
+        if image.is_primary:
+            product.images.exclude(pk=image.pk).update(is_primary=False)
+        elif not product.images.exclude(pk=image.pk).exists():
+            image.is_primary = True
+            image.save(update_fields=['is_primary'])
+
+        return Response(ProductImageSerializer(image).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='images/(?P<image_id>[^/.]+)')
+    def delete_image(self, request, pk=None, image_id=None):
+        product = self.get_object()
+        try:
+            image = product.images.get(id=image_id)
+        except ProductImage.DoesNotExist:
+            return Response({'detail': 'Image not found.'}, status=status.HTTP_404_NOT_FOUND)
+        was_primary = image.is_primary
+        image.delete()
+        if was_primary:
+            next_image = product.images.order_by('sort_order').first()
+            if next_image:
+                next_image.is_primary = True
+                next_image.save(update_fields=['is_primary'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=['post'], url_path='images/(?P<image_id>[^/.]+)/set-primary')
+    def set_primary_image(self, request, pk=None, image_id=None):
+        product = self.get_object()
+        try:
+            image = product.images.get(id=image_id)
+        except ProductImage.DoesNotExist:
+            return Response({'detail': 'Image not found.'}, status=status.HTTP_404_NOT_FOUND)
+        product.images.exclude(pk=image.pk).update(is_primary=False)
+        image.is_primary = True
+        image.save(update_fields=['is_primary'])
+        return Response(ProductImageSerializer(image).data)
 
     def get_serializer_class(self):
         if self.action == 'list':

@@ -49,9 +49,15 @@ class AttributeSchemaSerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
-        fields = ['id', 'url', 'alt_text', 'sort_order', 'is_primary', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'image', 'url', 'alt_text', 'sort_order', 'is_primary', 'created_at']
+        read_only_fields = ['id', 'url', 'created_at']
 
+
+class ProductImageUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'url', 'alt_text', 'sort_order', 'is_primary']
+        read_only_fields = ['id', 'url']
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     effective_price = serializers.ReadOnlyField()
